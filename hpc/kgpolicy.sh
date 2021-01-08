@@ -1,6 +1,6 @@
 #!/usr/bin/bash
 
-#SBATCH --job-name=kg-policy
+#SBATCH --job-name=kgpolicy
 #SBATCH --output=logs/%x-%j.out
 #SBATCH -A st_graphs
 #SBATCH -p dlt
@@ -8,15 +8,32 @@
 #SBATCH --gres=gpu:1
 #SBATCH -t 47:59:00
 
-wget https://github.com/xiangwang1223/kgpolicy/releases/download/v1.0/Data.zip 
-unzip Data.zip
+module purge
+module load cuda/9.2.148 
+module load python/anaconda3.2019.3
+module load gcc/5.2.0
+source /share/apps/python/anaconda3.2019.3/etc/profile.d/conda.sh
+source activate kgpolicy
 
-REPO_DIR=~/recommendation/knowledge_graph_policy_network
-cd kgpolicy
-conda create -n geo python=3.6
-conda activate geo
-bash setup.sh
+REPO_DIR=~/recommendation/KG-Policy/kgpolicy
+cd $REPO_DIR
 
+model=kgpolicy
+
+printf "Running all datasets"
+date
+printf "Running ${model} on last-fm\n"
 python main.py
-python main.py --regs 1e-4 --dataset yelp2018 --model_path model/best_yelp.ckpt 
-python main.py --regs 1e-4 --dataset amazon-book --model_path model/best_ab.ckpt 
+date
+printf "Running ${model} on yelp2018\n"
+python main.py \
+    --regs 1e-4 \
+    --dataset yelp2018 \
+    --model_path model/best_yelp.ckpt 
+date
+printf "Running ${model} on amazon-book\n"
+python main.py \
+    --regs 1e-4 \
+    --dataset amazon-book \
+    --model_path model/best_ab.ckpt
+printf "Finished"
